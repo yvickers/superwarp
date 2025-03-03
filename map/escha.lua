@@ -5,6 +5,8 @@ local npc_names = T{
     enter = S{'Undulating Confluence', 'Dimensional Portal'},
     domain = S{'Affi', 'Dremi', 'Shiftrix'},
     exit= S{'Undulating Confluence', 'Dimensional Portal'},
+    sanc = T{'Etched Rock'},
+    canteen = T{'Incantrix'},
 }
 return T{
     short_name = 'ew',
@@ -25,6 +27,11 @@ return T{
     validate = function(menu_id, zone, current_activity)
         local destination = current_activity.activity_settings
         if not ( -- NPCs:
+               --sanctorium
+               menu_id == 11 or
+               --incantrix
+               menu_id == 31 or 
+
                menu_id == 9701 or 
                -- enter: Confluence/Portal:
                menu_id == 65 or -- Qufim
@@ -489,6 +496,77 @@ return T{
                     return actions
                 end
             end
+        end,
+        sanc = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+            
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 0
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu', message='Entering Sanctorium'})
+
+            return actions
+        end,
+        canteen = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+
+            log("Getting canteen...")
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 0
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 3
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=false, delay=1+wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu'})
+
+            return actions
         end,
     },
     warpdata = T{

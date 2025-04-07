@@ -6,6 +6,7 @@ local npc_names = T{
     normal = S{'Diaphanous Gadget #?'},
     hard = S{'Diaphanous Gadget #?'},
     repop = S{'Diaphanous Device','Diaphanous Bitzer'},
+    ruspix = S{'Ruspix'},
 }
 --///////////////////////////////////////////////////////////////////---Destinations---/////////////////////////////////////////////////////////////////////////////////////////////////////////////-
    device_  = {display_name = 'Device' ,         menu_id = 1000, index = 817, zone = zone_tag,npc = 21001009, offset = 1, x = -836.00006103516, y = -20, z = -178.00001525879 , h = 0, unknown1 = 1 , unknown2 = 1}
@@ -156,6 +157,13 @@ return T {
         return mlist
     end,
     validate = function(menu_id, zone, current_activity,p)
+        if current_activity.sub_cmd == 'ruspix' then
+            if menu_id == 71 then
+                return nil
+            else
+                return 'This is not Ruspix!'
+            end
+        end
 		local origination = p["Menu Parameters"]:unpack('b8', 1)
         local bitcheckinator = p["Menu Parameters"]:unpack('b8', 5)
 		zone_tag = windower.ffxi.get_info().zone
@@ -876,6 +884,36 @@ return T {
             return actions
         end,
 ----------------------------------------------------------
+        ruspix = function (current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 5
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=false, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), message='Converting Ruspix Plate'})
+
+            return actions
+        end,    
     },
     warpdata = T{
 					--The bitzer and gadget destinations are not handled this way.

@@ -6,6 +6,7 @@ local npc_names = T{
     warp = S{'Veridical Conflux', 'Ernst', 'Ivan', 'Willis', 'Horst', 'Kierron', 'Vincent'},
     enter = S{'Cavernous Maw'},
     exit = S{'Cavernous Maw'},
+    stones = T{'Erich'}
 }
 return T{
     short_name = 'ab',
@@ -43,6 +44,8 @@ return T{
                 menu_id == 908 or -- Grauberg
                 -- exit: maws
                 menu_id == 200 or
+                -- stones
+                menu_id == 405 or
                 -- confluxes: 
                (menu_id >= 2132 and menu_id <= 2139) or -- confluxes
                 menu_id == 123) then -- conflux 00
@@ -344,6 +347,40 @@ return T{
             packet["Zone"] = zone
             packet["Menu ID"] = menu
             actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu', message='Leaving Abyssea'})
+
+            return actions
+        end,
+        stones = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 0
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 6
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=false, delay=1+wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu', message='Getting Stones'})
 
             return actions
         end,

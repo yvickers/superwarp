@@ -4,6 +4,7 @@ local npc_names = T{
     exit = S{'Otherworldly Vortex'},
     port = S{'Veridical Conflux'},
     warp = S{'Translocator'},
+    phone = T{'???'},
 }
 --88888888888888888888888888888888888888888888888888888888888888888888888888888-----destinations-----888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888-
 	zone_tag = windower.ffxi.get_info().zone
@@ -94,6 +95,12 @@ return T {
 		if npc == nil then
 			return 'Please update your superwarp.lua file to the latest version for Odyssey support'
 		end
+        if current_activity.sub_cmd == 'phone' then
+            if menu_id == 2001 then
+                return nil
+            end
+            return 'Incorrect menu, are you in the right zone?'
+        end
 		if npc == 20975716 or npc == 20979812 then
 			return 'You cannot use superwarp in Gaol!'
 		end
@@ -572,6 +579,36 @@ end
             packet["Zone"] = zone
             packet["Menu ID"] = menu
             actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay=2, description='complete menu'})
+
+            return actions
+        end,
+        phone = function (current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 4
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=false, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), message='Getting Moglophone'})
 
             return actions
         end,

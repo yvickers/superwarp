@@ -1,11 +1,10 @@
-local phall_zones = S{ 102, 108, 117 } 
 local npc_names = T{
     enter = T{'Shattered Telepoint', 'Cermet Gate'},
 }
 
 return T{
-    short_name = 'cop',
-    long_name = 'chains',
+    short_name = 'mythic',
+    long_name = 'mythic',
     npc_plural = 'points',
     zone_npc_list = function(type)
         local mlist = windower.ffxi.get_mob_list()
@@ -40,7 +39,7 @@ return T{
         local missing = T{}
         return missing
     end,
-    help_text = "[sw] cop [all/a/@all] hall --Enter pre promyvion zone.",
+    help_text = "[sw] mythic [all/a/@all] ichor/drop --Various mythic helper functions.",
     sub_zone_targets =  S{},
     auto_select_zone = function(zone)
     end,
@@ -61,7 +60,7 @@ return T{
         return actions
     end,
     sub_commands = {
-        enter = function(current_activity, zone, p, settings)
+        ichor = function(current_activity, zone, p, settings)
             local actions = T{}
             local packet = nil
             local menu = p["Menu ID"]
@@ -72,34 +71,22 @@ return T{
             packet["Target Index"] = windower.ffxi.get_player().index
             actions:append(T{packet=packet, description='update request'})
 
-            packet = packets.new('outgoing', 0x05B)
-            packet["Target"] = npc.id
-            packet["Option Index"] = 0
-            packet["_unknown1"] = 0
-            packet["Target Index"] = npc.index
-            packet["Automated Message"] = true
-            packet["_unknown2"] = 0
-            packet["Zone"] = zone
-            packet["Menu ID"] = menu
-            actions:append(T{packet=packet, description='send options'})
-
-            packet = packets.new('outgoing', 0x05B)
-            packet["Target"] = npc.id
-            packet["Option Index"] = 1
-            packet["_unknown1"] = 0
-            packet["Target Index"] = npc.index
-            packet["Automated Message"] = false
-            packet["_unknown2"] = 0
-            packet["Zone"] = zone
-            packet["Menu ID"] = menu
-            actions:append(T{packet=packet, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu', message='Entering Promyvion'})
-
             return actions
         end,
     },
     self_commands = {
-        test = function(current_activity, zone, settings )
-            log('test self commant')
+        drop = function(current_activity, zone, settings )
+            local items = windower.ffxi.get_items()
+            local droppables = S{
+                5414, --einherjar lamp
+                5365,5366,5367,5368,5369,5370,5371,5372,5373,5374,5375,5376,5377,5378,5379,5380,5381,5382,5383,5384 --cells
+            }
+
+            for index, item in pairs(items.inventory) do
+                if type(item) == 'table' and droppables:contains(item.id) and item.status == 0 then
+                    windower.ffxi.drop_item(index, item.count)
+                end
+            end
         end,
     },
     warpdata = T{

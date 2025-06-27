@@ -11,7 +11,8 @@ local maps =  {
     ['spd'] = require('map/spd'),
     ['sortie'] = require('map/sortie'),
     ['odyssey'] = require('map/odyssey'),
-    ['cop'] = require('map/cop')
+    ['cop'] = require('map/cop'),
+    ['mythic'] = require('map/mythic'),
 }
 
 for _, map in pairs(maps) do

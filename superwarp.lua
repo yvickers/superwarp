@@ -523,6 +523,47 @@ local function do_sub_cmd(map_name, sub_cmd, args)
     end
 end
 
+local function do_self_cmd(map_name, self_cmd, args)
+    local map = maps[map_name]
+
+    local zone = windower.ffxi.get_info()['zone']
+    current_activity = {type=map_name, self_cmd=self_cmd, args=args, caught_poke=true}
+
+    local validation_message = nil
+    if map.validate then validation_message = map.validate(0, zone, current_activity, {}) end
+    if validation_message ~= nil then
+        log("WARNING: "..validation_message.." Canceling action.")
+        last_activity = current_activity
+        state.loop_count = 0
+        current_activity = nil
+        reset(true)
+        return true
+    end
+
+    current_activity.action_queue = nil
+    current_activity.action_index = 1
+
+    debug("building "..current_activity.type.." self_command actions: "..current_activity.self_cmd)
+    current_activity.action_queue = map.self_commands[current_activity.self_cmd](current_activity, zone, settings)
+
+    if current_activity.action_queue and type(current_activity.action_queue) == 'table' then
+        -- startup actions.
+
+        current_activity.running = true
+
+        perform_next_action:schedule(0)
+
+        return true
+    else
+        last_activity = current_activity
+        state.loop_count = 0
+        current_activity = nil
+        return false
+    end
+
+    handle_before_warp()
+end
+
 local function do_find_missing_destinations(map_name, args)
     local map = maps[map_name]
     local npc, dist = find_npc(map.zone_npc_list('warp'))
@@ -601,6 +642,7 @@ local function handle_warp(warp, args, fast_retry, retries_remaining)
     for key,map in pairs(maps) do
         if map.short_name == warp then
             local sub_cmd = nil
+            local self_cmd = nil
             if map.sub_commands then
                 for sc, fn in pairs(map.sub_commands) do
                     if sc:lower() == args[1]:lower() then
@@ -609,9 +651,21 @@ local function handle_warp(warp, args, fast_retry, retries_remaining)
                 end
             end
 
+            if map.self_commands then
+                for sc, fn in pairs(map.self_commands) do
+                    if sc:lower() == args[1]:lower() then
+                        self_cmd = sc
+                    end
+                end
+            end
+
             if sub_cmd then
                 args:remove(1)
                 do_sub_cmd(key, sub_cmd, args)
+                return
+            elseif self_cmd then
+                args:remove(1)
+                do_self_cmd(key, self_cmd, args)
                 return
             else
                 local sub_zone_target = nil

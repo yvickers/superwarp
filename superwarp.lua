@@ -529,6 +529,31 @@ local function do_self_cmd(map_name, self_cmd, args)
     local zone = windower.ffxi.get_info()['zone']
     current_activity = {type=map_name, self_cmd=self_cmd, args=args, caught_poke=true}
 
+    if map.zone_npc_list(self_cmd) then
+        local npc, dist = find_npc(map.zone_npc_list(self_cmd))
+
+        if not npc then
+            if state.loop_count > 0 then
+                log('No '..map.npc_plural..' found! Retrying...')
+                state.loop_count = state.loop_count - 1
+                do_self_cmd:schedule(settings.retry_delay, map_name, self_cmd, args)
+            else
+                log('No '..map.npc_plural..' found!')
+            end
+        elseif dist > 6^2 then
+            if state.loop_count > 0 then
+                log(npc.name..' found, but too far! Retrying...')
+                state.loop_count = state.loop_count - 1
+                do_self_cmd:schedule(settings.retry_delay, map_name, self_cmd, args)
+            else
+                log(npc.name..' found, but too far!')
+            end
+        elseif npc and npc.id and npc.index and dist <= 6^2 then
+            current_activity.npc = npc
+        end
+    end
+    
+
     local validation_message = nil
     if map.validate then validation_message = map.validate(0, zone, current_activity, {}) end
     if validation_message ~= nil then
@@ -558,10 +583,9 @@ local function do_self_cmd(map_name, self_cmd, args)
         last_activity = current_activity
         state.loop_count = 0
         current_activity = nil
+        reset(true)
         return false
     end
-
-    handle_before_warp()
 end
 
 local function do_find_missing_destinations(map_name, args)

@@ -7,6 +7,16 @@ local npc_names = T{
     hard = S{'Diaphanous Gadget #?'},
     repop = S{'Diaphanous Device','Diaphanous Bitzer'},
     ruspix = S{'Ruspix'},
+    boxes = S{
+        'Chest #A1', 'Chest #A2', 'Chest #A3', 'Chest #A4', 'Chest #A5', 'Casket #A1', 'Casket #A2', 'Coffer #A',
+        'Chest #B1', 'Chest #B2', 'Chest #B3', 'Chest #B4', 'Chest #B5', 'Casket #B1', 'Casket #B2', 'Coffer #B',
+        'Chest #C1', 'Chest #C2', 'Chest #C3', 'Chest #C4', 'Chest #C5', 'Casket #C1', 'Casket #C2', 'Coffer #C',
+        'Chest #D1', 'Chest #D2', 'Chest #D3', 'Chest #D4', 'Chest #D5', 'Casket #D1', 'Casket #D2', 'Coffer #D',
+        'Chest #E1', 'Casket #E1', 'Casket #E2', 'Coffer #E',
+        'Chest #F1', 'Casket #F1', 'Casket #F2', 'Coffer #F',
+        'Chest #G1', 'Casket #G1', 'Casket #G2', 'Coffer #G',
+        'Chest #H1', 'Casket #H1', 'Casket #H2', 'Coffer #H'
+    }
 }
 --///////////////////////////////////////////////////////////////////---Destinations---/////////////////////////////////////////////////////////////////////////////////////////////////////////////-
    device_  = {display_name = 'Device' ,         menu_id = 1000, index = 817, zone = zone_tag,npc = 21001009, offset = 1, x = -836.00006103516, y = -20, z = -178.00001525879 , h = 0, unknown1 = 1 , unknown2 = 1}
@@ -163,6 +173,9 @@ return T {
             else
                 return 'This is not Ruspix!'
             end
+        end
+        if current_activity.self_cmd and current_activity.self_cmd == 'boxes' then
+            return nil
         end
 		local origination = p["Menu Parameters"]:unpack('b8', 1)
         local bitcheckinator = p["Menu Parameters"]:unpack('b8', 5)
@@ -913,7 +926,19 @@ return T {
             actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=false, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), message='Converting Ruspix Plate'})
 
             return actions
-        end,    
+        end,
+    },
+    self_commands = {
+        boxes = function (current_activity, zone, settings)
+            local packet = packets.new('outgoing', 0x01A, {
+                ["Target"]=current_activity.npc.id,
+                ["Target Index"]=current_activity.npc.index,
+                ["Category"]=0,
+                ["Param"]=0,
+                ["_unknown1"]=0})
+            packets.inject(packet)
+            return nil
+        end,
     },
     warpdata = T{
 					--The bitzer and gadget destinations are not handled this way.

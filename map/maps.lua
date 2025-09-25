@@ -13,6 +13,7 @@ local maps =  {
     ['odyssey'] = require('map/odyssey'),
     ['cop'] = require('map/cop'),
     ['mythic'] = require('map/mythic'),
+    ['garden'] = require('map/garden'),
 }
 
 for _, map in pairs(maps) do

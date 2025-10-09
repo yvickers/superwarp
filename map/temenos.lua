@@ -4,6 +4,13 @@ local npc_names = T{
     port = S{'Matter Diffusion Module'},
     ['next'] = S{'Matter Diffusion Module'},
     warp = S{'Matter Diffusion Module'},
+    boxes = S{
+        'Temenos Coffer #1',
+        'Temenos Coffer #2',
+        'Temenos Coffer #3',
+        'Temenos Coffer #4',
+         '???',
+    },
 }
 
    local destination_array = {
@@ -114,6 +121,9 @@ return T {
         return mlist
     end,
     validate = function(menu_id, zone, current_activity,p)
+        if current_activity.self_cmd and current_activity.self_cmd == 'boxes' then
+            return nil
+        end
 		local _floor, item_id = find_first_missing_floor()
 		local destination = nil
 		local cross_tower_checkinator = nil
@@ -604,6 +614,18 @@ return T {
             description = 'complete menu'
             })
             return actions
+        end,
+    },
+    self_commands = {
+        boxes = function (current_activity, zone, settings)
+            local packet = packets.new('outgoing', 0x01A, {
+                ["Target"]=current_activity.npc.id,
+                ["Target Index"]=current_activity.npc.index,
+                ["Category"]=0,
+                ["Param"]=0,
+                ["_unknown1"]=0})
+            packets.inject(packet)
+            return nil
         end,
     },
     warpdata = T{

@@ -6,6 +6,13 @@ local npc_names = T{
     warp = S{'Swirling Vortex'},
     enter = S{'Swirling Vortex'},
     ['exit'] = S{'Radiant Aureole'},
+    boxes = S{
+        'Apollyon Coffer #1',
+        'Apollyon Coffer #2',
+        'Apollyon Coffer #3',
+        'Apollyon Coffer #4',
+         '???',
+    },
 }
 
    local destination_array = {
@@ -103,6 +110,9 @@ return T {
         return mlist
     end,
     validate = function(menu_id, zone, current_activity,p)
+        if current_activity.self_cmd and current_activity.self_cmd == 'boxes' then
+            return nil
+        end
 		local _floor, item_id = find_first_missing_floor()
 		local destination = nil
 		local cross_tower_checkinator = nil
@@ -651,6 +661,18 @@ return T {
             actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay=2, description='complete menu'})
 
             return actions
+        end,
+    },
+    self_commands = {
+        boxes = function (current_activity, zone, settings)
+            local packet = packets.new('outgoing', 0x01A, {
+                ["Target"]=current_activity.npc.id,
+                ["Target Index"]=current_activity.npc.index,
+                ["Category"]=0,
+                ["Param"]=0,
+                ["_unknown1"]=0})
+            packets.inject(packet)
+            return nil
         end,
     },
     warpdata = T{

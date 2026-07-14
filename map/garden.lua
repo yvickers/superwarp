@@ -1,5 +1,11 @@
 local npc_names = T{
+    flotsam = T{'Flotsam'},
+    fresh = T{'Pond Dredger'},
     mine = T{'Mineral Vein #4', 'Mineral Vein #3','Mineral Vein #2','Mineral Vein',},
+    salt = T{'Coastal Fishing Net'},
+    sparks = T{'Isakoth'},
+    powder = T{'Igsli'},
+    keys = T{'Igsli'},
 }
 
 local function table_contains(t, value)
@@ -62,6 +68,76 @@ return T{
         return actions
     end,
     sub_commands = {
+        flotsam = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+            
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu', message='Combin the beach, man!'})
+
+            return actions
+        end,
+        fresh = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+            
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu', message='Combin the beach, man!'})
+
+            return actions
+        end,
         mine = function(current_activity, zone, p, settings)
             local actions = T{}
             local packet = nil
@@ -103,8 +179,52 @@ return T{
 
             return actions
         end,
+        salt = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+            
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu', message='Combin the beach, man!'})
+
+            return actions
+        end,
     },
     self_commands = {
+        sparks = function(current_activity, zone, settings )
+            windower.chat.input('//sparky buy')
+        end,
+        powder = function(current_activity, zone, settings )
+            windower.chat.input('//buypowder 999')
+        end,
+        keys = function(current_activity, zone, settings )
+            windower.chat.input('//buykeys 6')
+        end,
     },
     warpdata = T{
 

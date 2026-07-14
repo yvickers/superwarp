@@ -15,7 +15,8 @@ local maps =  {
     ['mythic'] = require('map/mythic'),
     ['garden'] = require('map/garden'),
     ['temenos'] = require('map/temenos'),
-    ['apollyon'] = require('map/apollyon')
+    ['apollyon'] = require('map/apollyon'),
+    --['coalitions'] = require('map/coalitions'),
 }
 
 for _, map in pairs(maps) do

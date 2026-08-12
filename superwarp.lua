@@ -1317,6 +1317,7 @@ windower.register_event('addon command', function(...)
         windower.add_to_chat(207,'| superwarp |\nsw cancel -- Cancels pending warp command.\nsw reset -- Attempts to clear menu lock.\nsw sync -- Instantly synchronizes all characters Limbus chest tracking order with the character the command is executed from.\nsw chest (tower) / chest -- Manually updates chest tracking with the tower you input after the chest command. i.e. //sw chest se; If no argument is provided will display the next chest open location within limbus. i.e. //sw chest\nsw hpdefaults -- Toggles homepoint default destinations between Legacy and New.\nsw display -- Toggles all / party warp display.\nsw missing -- Display destinations you are missing from the nearest warp system if applicable.\n-----------------------------')
         windower.add_to_chat(207,'Use [all/a/@all/party/p] after the command prefix and before the destination to warp all characters or all party/alliance members. (//li p next)\nYou may still use [warp] if you learned to include it or still have macros written this way. (sw hp warp eastern adoulin 1) (Legacy support)\n\n[New!] You may now use "//sw" or "/console sw" for all maps with no extra command prefix. i.e. //sw port , or //sw rab to go to Rabao #2')
         windower.add_to_chat(207,'[New!] superwarp (smartcommand) - You may now use just //sw with no command for all warps that do not require a destination to be specified. i.e. enter and exit commands for abyssea, escha zones and apollyon, domain invasion enter, next command in limbus, port in odyssey and sortie, runic portal assault and return, campaign npcs return and Cavernous Maw port, all 4 Walk Of Echoes commands. It can also be used to go to the default destination in cases that call for specification. "//sw p" to use the smart command with all party members, or "a" for all. Use with confidence. Layers of failsafes are in place.')
+        windower.add_to_chat(207,'If you become menu locked use //sw reset to clear.')
     elseif current_activity ~= nil then
         log('superwarp is currently busy. To cancel the last request try "//sw cancel"')
         return
@@ -1382,8 +1383,8 @@ local function auto_shutdown(id) -- Ensure that if the same process ID is still 
         current_activity = nil
         reset(true)
     elseif not current_activity then
-        log('If you become menu locked use //sw reset to clear.')
         debug("No current activity, doing nothing.")
+        debug('If you become menu locked use //sw reset to clear.')
         return
     end
 end

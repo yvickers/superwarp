@@ -51,7 +51,7 @@ return T{
         if current_activity.sub_cmd == 'enter' and not entry_zones:contains(zone) then
             return 'Not in an entry zone!'
         end
-        if current_activity.sub_cmd == 'enter' and menu_id == 14 then
+        if current_activity.sub_cmd == 'enter' and menu_id == 14 and escha_zones:contains(zone) then
             return 'You are already inside.'
         end
         if current_activity.sub_cmd == 'exit' and not escha_zones:contains(zone) then

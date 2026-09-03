@@ -1,18 +1,18 @@
-local entry_zones = S{126,25,102,108,117}
-local escha_zones = S{288,289,291}
+local entry_zones = S{126,25,102,108,117,291}
+local escha_zones = S{288,289,291,293}
 local npc_names = T{
     warp = S{'Eschan Portal', 'Ethereal Ingress'},
-    enter = S{'Undulating Confluence', 'Dimensional Portal'},
+    enter = S{'Undulating Confluence', 'Dimensional Portal','Etched Rock'},
     domain = S{'Affi', 'Dremi', 'Shiftrix'},
-    exit= S{'Undulating Confluence', 'Dimensional Portal'},
-    sanc = T{'Etched Rock'},
+    exit= S{'Undulating Confluence', 'Dimensional Portal','Etched Rock'},
     canteen = T{'Incantrix'},
 }
 return T{
-    short_name = 'ew',
-    long_name = 'eschan portal',
+    short_name = {'ew','ea'},
+    long_name = 'Escha',
     npc_plural = 'eschan npcs',
     npc_names = npc_names,
+    escha_zones = escha_zones,
     zone_npc_list = function(type)
         local mlist = windower.ffxi.get_mob_list()
         mlist = table.filter(mlist, function(name)
@@ -43,6 +43,8 @@ return T{
                menu_id == 4 or -- Escha - Zi'tah
                menu_id == 1 or -- Escha - Ru'aun
                menu_id == 14 or -- Reisenjima
+               menu_id == 16 or -- Etched Rock, Reisenjima Sanctorium
+               menu_id == 11 or -- Etched Rock, Reisenjima
                -- portal/ingress: 
                menu_id == 9100 ) then
             return "Incorrect menu detected! Menu ID: "..menu_id
@@ -54,6 +56,9 @@ return T{
 
         if current_activity.sub_cmd == 'enter' and not entry_zones:contains(zone) then
             return 'Not in an entry zone!'
+        end
+        if current_activity.sub_cmd == 'enter' and menu_id == 14 and escha_zones:contains(zone) then
+            return 'You are already inside.'
         end
         if current_activity.sub_cmd == 'exit' and not escha_zones:contains(zone) then
             return 'Not in an eschan zone!'
@@ -84,7 +89,7 @@ return T{
         end
         return missing
     end,
-    help_text = "|Escha| - [sw] ew [warp/w] [all/a/@all/party/p] portal number -- warp to a designated portal in your current escha zone.\n[sw] ew [all/a/@all] enter -- enter the eschan zone corresponding to the entrance zone.\n[sw] ew [all/a/@all] domain -- get Elvorseal if needed and warp to the domain invasion arena.\n[sw] ew [all/a/@all] domain return -- return Elvorseal.\n[sw] ew [all/a/@all] exit -- leave escha.\n-----------------------------",
+    help_text = "| Escha |\n Command options [ew, ea]\n- ew portal number -- warp to a designated portal in your current escha zone.\n- ew enter -- enter the eschan zone corresponding to the entrance zone.\n- ew domain -- get Elvorseal if needed and warp to the domain invasion arena.\n- ew domain return -- return Elvorseal.\n- ew exit -- leave escha.\n-----------------------------",
     sub_zone_targets =  S{'1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14','15' },
     auto_select_zone = function(zone)
         if zone == 288 then return 'Escha Zi\'tah' end
@@ -201,12 +206,18 @@ return T{
             local oi = 0
 
             -- qufim or misareaux
-            if zone == 126 or zone == 25 then oi = 1 end
+            if zone == 126 or zone == 25 or zone == 291 then 
+                oi = 1
             -- La theine, konschtat or tahrongi
-            if zone == 102 or zone == 108 or zone == 117 then oi = 2 end
+            elseif zone == 102 or zone == 108 or zone == 117 then 
+                oi = 2 
+            end
 
-            
-            log("Entering Escha...")
+            if zone == 291 then
+                log("Entering Reisenjima Sanctorium...")
+            else
+                log("Entering Escha...")
+            end
             -- update request
             packet = packets.new('outgoing', 0x016)
             packet["Target Index"] = windower.ffxi.get_player().index
@@ -232,7 +243,7 @@ return T{
             packet["_unknown2"] = 0
             packet["Zone"] = zone
             packet["Menu ID"] = menu
-            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay=2, description='complete menu'})
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation) + 0.5, description='complete menu'})
 
             return actions
         end,
@@ -242,7 +253,11 @@ return T{
             local menu = p["Menu ID"]
             local npc = current_activity.npc
 
-            log("Leaving Escha...")
+            if zone == 293 then
+                log("Leaving Reisenjima Sanctorium...")
+            else
+                log("Leaving Escha...")
+            end
             -- update request
             packet = packets.new('outgoing', 0x016)
             packet["Target Index"] = windower.ffxi.get_player().index
@@ -268,7 +283,7 @@ return T{
             packet["_unknown2"] = 0
             packet["Zone"] = zone
             packet["Menu ID"] = menu
-            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay=2, description='complete menu'})
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu'})
 
             return actions
         end,

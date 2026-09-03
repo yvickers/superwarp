@@ -1,0 +1,1264 @@
+local settings = nil
+local climb_unfinished = nil
+local entry_zones = S{33}
+local limbus_zones = S{37,38}
+local npc_names = T{
+    port = S{'Swirling Vortex','Matter Diffusion Module','Exit'},
+    ['next'] = S{'Swirling Vortex','Matter Diffusion Module','Exit'},
+	['random'] = S{'Swirling Vortex','Matter Diffusion Module','Exit'},
+	back = S{'Swirling Vortex','Matter Diffusion Module','Exit'},
+    warp = S{'Swirling Vortex','Matter Diffusion Module','Exit'},
+    enter = S{'Swirling Vortex'},
+    ['exit'] = S{'Radiant Aureole'},
+    boxes = S{
+        'Apollyon Coffer #1',
+        'Apollyon Coffer #2',
+        'Apollyon Coffer #3',
+        'Apollyon Coffer #4',
+        'Temenos Coffer #1',
+        'Temenos Coffer #2',
+        'Temenos Coffer #3',
+        'Temenos Coffer #4',
+        '???',
+    },
+}
+
+   local destination_array = {
+        ['apollyon'] = {
+	   E1  = {display_name = 'Entrance 1', zone = 38, menu_id = 102,  index = 678, npc = 16933542, offset = 1, x = -608,z = 0, y = -600,h = 126, unknown1 = 1,  unknown2 = 1},
+	   E2  = {display_name = 'Entrance 2', zone = 38, menu_id = 103,  index = 679, npc = 169335543, offset = 1, x = 608,z = 0, y = -600,h = 0,   unknown1 = 1,  unknown2 = 1},
+	   NW1 = {display_name = 'Northwest 1', zone = 38, menu_id = 104,  index = 680, npc = 16933544, offset = 1, x = -440.00003051758, z = 0, y = -88.000007629395,  h = 191, unknown1 = 11, unknown2 = 1},
+	   NW2 = {display_name = 'Northwest 2', zone = 38, menu_id = 105,  index = 681, npc = 16933545, offset = 2, x = -534,z = 0, y = 171.00001525879,h = 159, unknown1 = 12, unknown2 = 1},
+	   NW3 = {display_name = 'Northwest 3', zone = 38, menu_id = 106,  index = 682, npc = 16933546, offset = 3, x = -294,z = 0, y = 171.00001525879,h = 159, unknown1 = 13, unknown2 = 1},
+	   NW4 = {display_name = 'Northwest 4', zone = 38, menu_id = 107,  index = 683, npc = 16933547, offset = 4, x = -628,z = 0, y = 497.00003051758,h = 223, unknown1 = 14, unknown2 = 1},
+	   NW5 = {display_name = 'Northwest 5', zone = 38, menu_id = 108,  index = 684, npc = 16933548, offset = 5, x = -388,z = 0, y = 498.00003051758,h = 223, unknown1 = 15, unknown2 = 1},
+	   SW1 = {display_name = 'Southwest 1', zone = 38, menu_id = 109,  index = 685, npc = 16933549, offset = 3, x = -468.00003051758, z = 0, y = -625,h = 223, unknown1 = 21, unknown2 = 1},
+	   SW2 = {display_name = 'Southwest 2', zone = 38, menu_id = 110,  index = 686, npc = 16933550, offset = 4, x = -576,z = 0, y = -428.00003051758,  h = 159, unknown1 = 22, unknown2 = 1},
+	   SW3 = {display_name = 'Southwest 3', zone = 38, menu_id = 111,  index = 687, npc = 16933551, offset = 0, x = -428.00003051758, z = 0, y = -385.00003051758,  h = 223, unknown1 = 23, unknown2 = 1},
+	   SW4 = {display_name = 'Southwest 4', zone = 38, menu_id = 112,  index = 688, npc = 16933552, offset = 5, x = -176.00001525879, z = 0, y = -628,h = 159, unknown1 = 24, unknown2 = 1},
+	   NE1 = {display_name = 'Northeast 1', zone = 38, menu_id = 113,  index = 689, npc = 16933553, offset = 9, x = 440.00003051758,  z = 0, y = -88.000007629395,  h = 191, unknown1 = 31, unknown2 = 1},
+	   NE2 = {display_name = 'Northeast 2', zone = 38, menu_id = 114,  index = 690, npc = 16933554, offset = 10,x = 534,z = 0, y = 171.00001525879,h = 223, unknown1 = 32, unknown2 = 1},
+	   NE3 = {display_name = 'Northeast 3', zone = 38, menu_id = 115,  index = 691, npc = 16933555, offset = 10,x = 294,z = 0, y = 171.00001525879,h = 223, unknown1 = 33, unknown2 = 1},
+	   NE4 = {display_name = 'Northeast 4', zone = 38, menu_id = 116,  index = 692, npc = 16933556, offset = 1, x = 628,z = 0, y = 497.00003051758,h = 159, unknown1 = 34, unknown2 = 1},
+	   NE5 = {display_name = 'Northeast 5', zone = 38, menu_id = 117,  index = 693, npc = 16933557, offset = 2, x = 388.00003051758,  z = 0, y = 498.00003051758,h = 159, unknown1 = 35, unknown2 = 1},
+	   SE1 = {display_name = 'Southeast 1', zone = 38, menu_id = 118,  index = 694, npc = 16933558, offset = 5, x = 468.00003051758,  z = 0, y = -625,h = 159, unknown1 = 41, unknown2 = 1},
+	   SE2 = {display_name = 'Southeast 2', zone = 38, menu_id = 119,  index = 695, npc = 16933559, offset = 6, x = 576,z = 0, y = -428.00003051758,  h = 223, unknown1 = 42, unknown2 = 1},
+	   SE3 = {display_name = 'Southeast 3', zone = 38, menu_id = 120,  index = 696, npc = 16933560, offset = 7, x = 428.00003051758,  z = 0, y = -385.00003051758,  h = 159, unknown1 = 43, unknown2 = 1},
+	   SE4 = {display_name = 'Southeast 4', zone = 38, menu_id = 121,  index = 697, npc = 16933561, offset = 8, x = 176.00001525879,  z = 0, y = -628,h = 223, unknown1 = 44, unknown2 = 1},
+	   CN = {display_name = 'Central Apollyon',  zone = 38, menu_id = 123,  index = 698, npc = 16933562, offset = 8, x = 0,  z = 0, y = 196.00001525879,h = 63, unknown1 = 51, unknown2 = 1},
+        },
+    ['temenos'] ={
+       E  = {display_name = 'Entrance' ,        zone = 37, menu_id = 1000, index = 510, npc = 16929278, offset = 1, x = 580, z = 0 ,  y = 86.000007629395,   h = 63,  unknown1 = 1 , unknown2 = 1},
+	   N1 = {display_name = 'Northern Tower 1', zone = 37, menu_id = 1004, index = 571, npc = 16929339, offset = 1, x = -140,z = -82.380004882812 ,y = 376.00003051758,   h = 191, unknown1 = 11 ,unknown2 = 1},
+	   N2 = {display_name = 'Northern Tower 2', zone = 37, menu_id = 1005, index = 572, npc = 16929340, offset = 2, x = -260,z = 77.620002746582 , y = 376.00003051758, h = 191, unknown1 = 12 ,unknown2 = 1},
+	   N3 = {display_name = 'Northern Tower 3', zone = 37, menu_id = 1006, index = 573, npc = 16929341, offset = 3, x = -460.00003051758, z = -82.380004882812 ,y = 376.00003051758,   h = 191, unknown1 = 13 ,unknown2 = 1},
+	   N4 = {display_name = 'Northern Tower 4', zone = 37, menu_id = 1007, index = 574, npc = 16929342, offset = 4, x = -580,z = 77.620002746582 , y = 376.00003051758,   h = 191, unknown1 = 14 ,unknown2 = 1},
+	   W1 = {display_name = 'Western Tower 1',  zone = 37, menu_id = 1011, index = 578, npc = 16929346, offset = 3, x = -140,z = -162.38000488281 ,y = 96.000007629395,                h = 191, unknown1 = 21, unknown2 = 1},
+	   W2 = {display_name = 'Western Tower 2',  zone = 37, menu_id = 1012, index = 579, npc = 16929347, offset = 4, x = -260,z = -2.3800001144409 ,y = 96.000007629395,                h = 191, unknown1 = 22, unknown2 = 1},
+	   W3 = {display_name = 'Western Tower 3',  zone = 37, menu_id = 1013, index = 580, npc = 16929348, offset = 0, x = -460.00003051758, z = -162.38000488281 ,y = 96.000007629395,   h = 191, unknown1 = 23, unknown2 = 1},
+	   W4 = {display_name = 'Western Tower 4',  zone = 37, menu_id = 1014, index = 581, npc = 16929349, offset = 5, x = -580,z = -2.3800001144409, y = 96.000007629395,                h = 191, unknown1 = 24, unknown2 = 1},
+	   E1 = {display_name = 'Eastern Tower 1',  zone = 37, menu_id = 1018, index = 585, npc = 16929353, offset = 9,  x = -140,z = -82.380004882812, y = -184.00001525879,               h = 191, unknown1 = 31, unknown2 = 1},
+	   E2 = {display_name = 'Eastern Tower 2',  zone = 37, menu_id = 1019, index = 586, npc = 16929354, offset = 10, x = -260,z = 77.620002746582,  y = -184.00001525879,               h = 191, unknown1 = 32, unknown2 = 1},
+	   E3 = {display_name = 'Eastern Tower 3',  zone = 37, menu_id = 1020, index = 587, npc = 16929355, offset = 10, x = -460.00003051758, z = -82.380004882812, y = -184.00001525879,  h = 191, unknown1 = 33, unknown2 = 1},
+	   E4 = {display_name = 'Eastern Tower 4',  zone = 37, menu_id = 1021, index = 588, npc = 16929356, offset = 1,  x = -580,z = 77.620002746582,   y = -184.00001525879,              h = 191, unknown1 = 34, unknown2 = 1},
+	   C1 = {display_name = 'Central Tower 1',  zone = 37, menu_id = 1023, index = 590, npc = 16929358, offset = 5, x = 260, z = -162.38000488281, y = -504.00003051758,  h = 191, unknown1 = 41, unknown2 = 1},
+	   C2 = {display_name = 'Central Tower 2',  zone = 37, menu_id = 1024, index = 591, npc = 16929359, offset = 6, x = 20,  z = -2.3800001144409, y = -544,              h = 191, unknown1 = 42, unknown2 = 1},
+	   C3 = {display_name = 'Central Tower 3',  zone = 37, menu_id = 1025, index = 592, npc = 16929360, offset = 7, x = -296,z = -162.38000488281, y = -500.00003051758,  h = 127, unknown1 = 43, unknown2 = 1},
+	   CN = {display_name = 'Temenos Central B1',zone = 37, menu_id = 1026, index = 594, npc = 16929361, offset = 8, x = -540,z = -2.3800001144409, y = -584,  h = 191, unknown1 = 51, unknown2 = 1},   
+         }
+	}
+---------------------------
+local apollyon_towers = {
+    cn = {
+        [123] = true,
+    },
+    southeast = {
+        [118] = true,
+        [119] = true,
+        [120] = true,
+        [121] = true,
+    },
+
+    northeast = {
+        [113] = true,
+        [114] = true,
+        [115] = true,
+        [116] = true,
+        [117] = true,
+    },
+
+    southwest = {
+        [109] = true,
+        [110] = true,
+        [111] = true,
+        [112] = true,
+    },
+
+    northwest = {
+        [104] = true,
+        [105] = true,
+        [106] = true,
+        [107] = true,
+        [108] = true,
+    },
+}
+local temenos_towers = {
+    cn = {
+        [1026] = true,
+    },
+    central = {
+        [1023] = true,
+        [1024] = true,
+        [1025] = true,
+    },
+
+    east = {
+        [1018] = true,
+        [1019] = true,
+        [1020] = true,
+        [1021] = true,
+    },
+
+    west = {
+        [1011] = true,
+        [1012] = true,
+        [1013] = true,
+        [1014] = true,
+    },
+
+    north = {
+        [1004] = true,
+        [1005] = true,
+        [1006] = true,
+        [1007] = true,
+    },
+}
+local function get_tower(menu_id, tower_set)
+    for _, tower in pairs(tower_set) do
+        if tower[menu_id] then
+            return tower
+        end
+    end
+end
+---------------------------
+local temenos_temp_item_ids = {
+   -- North
+        ["N1"] = 9956,
+        ["N2"] = 9957,
+        ["N3"] = 9958,
+        ["N4"] = 9959,
+   -- West
+        ["W1"] = 9963,
+        ["W2"] = 9964,
+        ["W3"] = 9965,
+        ["W4"] = 9966,
+   --East
+        ["E1"] = 9970,
+        ["E2"] = 9971,
+        ["E3"] = 9972,
+        ["E4"] = 9973,
+   -- Central
+        ["C1"] = 9977,
+        ["C2"] = 9978,
+        ["C3"] = 9979,
+}
+
+local apollyon_temp_item_ids = {
+   -- Northwest
+        ["NW1"] = 9981,
+        ["NW2"] = 9982,
+        ["NW3"] = 9983,
+        ["NW4"] = 9984,
+        ["NW5"] = 9985,
+   -- Southwest
+        ["SW1"] = 9986,
+        ["SW2"] = 9987,
+        ["SW3"] = 9988,
+        ["SW4"] = 9989,
+   --Northeast
+        ["NE1"] = 9990,
+        ["NE2"] = 9991,
+        ["NE3"] = 9992,
+        ["NE4"] = 9993,
+        ["NE5"] = 9994,
+   -- Southeast
+        ["SE1"] = 9995,
+        ["SE2"] = 9996,
+        ["SE3"] = 9997,
+        ["SE4"] = 9998,
+}
+
+local function has_temp_item(item_id)
+    local temp_items = windower.ffxi.get_items(3)
+    for _, item in ipairs(temp_items) do
+        if item.id == item_id then
+            return true
+        end
+    end
+    return false
+end
+
+local apollyon_floor_order = {
+    "NW1","NW2","NW3","NW4","NW5",
+    "SW1","SW2","SW3","SW4",
+    "NE1","NE2","NE3","NE4","NE5",
+    "SE1","SE2","SE3","SE4"
+}
+
+local temenos_floor_order = {
+    "N1","N2","N3","N4",
+    "W1","W2","W3","W4",
+    "E1","E2","E3","E4",
+    "C1","C2","C3",
+}
+
+local function find_5k_chest(zone_id)
+    local zone, chest_keys
+
+    if zone_id == 37 then
+        zone = "temenos"
+        chest_keys = { "N4", "W4", "E4", "C3" }
+    elseif zone_id == 38 then
+        zone = "apollyon"
+        chest_keys = { "NW5", "SW4", "NE5", "SE4" }
+    else
+        return nil
+    end
+
+    local chest_table = settings.limbus_chest_order[zone]
+    if not chest_table then return nil end
+
+    for _, key in ipairs(chest_keys) do
+        if chest_table[key] == 4 then
+            return key
+        end
+    end
+end
+
+local function find_first_apollyon_missing_floor()
+    for _, _floor in ipairs(apollyon_floor_order) do
+        local item_id = apollyon_temp_item_ids[_floor]
+        if not has_temp_item(item_id) then
+            return _floor, item_id
+        end
+    end
+    return nil
+end
+
+local function find_first_temenos_missing_floor()
+    for _, _floor in ipairs(temenos_floor_order) do
+        local item_id = temenos_temp_item_ids[_floor]
+        if not has_temp_item(item_id) then
+            return _floor, item_id
+        end
+    end
+    return nil
+end
+
+local function get_current_apollyon_floor(menu_id)
+    for floor, data in pairs(destination_array.apollyon) do
+        if data.menu_id == menu_id then
+            return floor
+        end
+    end
+    return nil
+end	
+	
+local function get_current_temenos_floor(menu_id)
+    for floor, data in pairs(destination_array.temenos) do
+        if data.menu_id == menu_id then
+            return floor
+        end
+    end
+    return nil
+end	
+
+local function find_shuffled_missing_apollyon_floor(menu_id)
+    local current_floor = get_current_apollyon_floor(menu_id)
+    if not current_floor then return nil end
+
+    local current_tower = current_floor:sub(1, 2)
+    local fallback_floor, fallback_item = nil, nil
+    for floor, item_id in pairs(apollyon_temp_item_ids) do
+        if --[[floor ~= current_floor and]] not has_temp_item(item_id) then
+            if floor:sub(1, 2) == current_tower then
+                return floor, item_id
+            end
+            if not fallback_floor then
+                fallback_floor, fallback_item = floor, item_id
+            end
+        end
+    end
+    return fallback_floor, fallback_item
+end
+
+local function find_shuffled_missing_temenos_floor(menu_id)
+    local current_floor = get_current_temenos_floor(menu_id)
+    if not current_floor then return nil end
+
+    local current_tower = current_floor:sub(1, 1)
+    local fallback_floor, fallback_item = nil, nil
+    for floor, item_id in pairs(temenos_temp_item_ids) do
+        if --[[floor ~= current_floor and]] not has_temp_item(item_id) then
+            if floor:sub(1, 1) == current_tower then
+                return floor, item_id
+            end
+            if not fallback_floor then
+                fallback_floor, fallback_item = floor, item_id
+            end
+        end
+    end
+    return fallback_floor, fallback_item
+end
+
+return T {
+    short_name = {'li','te','ap'},
+    long_name = 'Limbus',
+    move_in_zone = true,
+    npc_plural = 'Limbus warps',
+    npc_names = npc_names,
+    zone_npc_list = function(type)
+        local mlist = windower.ffxi.get_mob_list()
+        mlist = table.filter(mlist, function(name)
+            return name ~= "" and npc_names[type]:any(string.startswith + {name})
+        end)
+        mlist = table.map(mlist, function(name)
+            local num = name:match('%d+$')
+            return {
+                name = name,
+                key = (num and tostring(num))
+            }
+        end)
+        return mlist
+    end,
+    validate = function(menu_id, zone, c_a,p,chestdata)
+		if chestdata == nil then
+			return 'Please update your superwarp.lua file to version 1.0.5 or later for Limbus support.'
+		end
+		settings = chestdata
+		local _apollyon_floor, item_id = find_first_apollyon_missing_floor()
+        local _temenos_floor, item_id = find_first_temenos_missing_floor()
+		local _apollyon_shuffle, item_id = find_shuffled_missing_apollyon_floor(menu_id)
+        local _temenos_shuffle, item_id = find_shuffled_missing_temenos_floor(menu_id)
+		local destination = nil
+		local cross_tower_checkinator = nil
+		local current_floor_checkinator = nil
+		local CN_check = nil
+        if c_a.sub_cmd == 'port' or c_a.sub_cmd == 'next' or c_a.sub_cmd == 'back' or c_a.sub_cmd == 'random' then
+            destination = nil
+        else
+            destination = c_a.activity_settings
+        end
+
+		--====== CN ======
+		if destination and (destination.menu_id == 123 or destination.menu_id == 1026) then
+			if menu_id ~= 102 and menu_id ~= 103 and menu_id ~= 1000 then
+				return "You must be at the entrance to warp there."
+			end
+			local unlockerator = p["Menu Parameters"] --and p["Menu Parameters"]:unpack('b8', 1)
+			CN_check = unlockerator and has_bit(unlockerator, 4)
+			if CN_check then
+				return "You cannot enter right now; CN is not open."
+			end
+		end
+        --------------------------------------------------------------------------------------------------------------------------------------------
+        --  Apollyon
+        --------------------------------------------------------------------------------------------------------------------------------------------
+		if c_a.sub_cmd == 'enter' and zone ~= 33 and menu_id ~= 159 and menu_id ~= 160 then
+			return "You cannot use the enter command here."
+		end
+		if c_a.sub_cmd == 'exit' and zone ~= 38 and menu_id ~= 100 and menu_id ~= 101 then
+			return "These aren't the droids you're looking for."
+		end
+if zone == 38 then
+        if not (c_a.sub_cmd == 'enter' or c_a.sub_cmd == 'exit') and
+        not (menu_id >= 102 and menu_id <= 123) then
+            return "Incorrect menu detected! Menu ID: " .. menu_id
+        end
+		-------------------------------------------------------------------------------------------------------------------------------------------
+       -- Destination setters
+        -------------------------------------------------------------------------------------------------------------------------------------------
+		if c_a.sub_cmd == 'next' then
+			if _apollyon_floor then
+				current_activity.args = destination_array.apollyon[_apollyon_floor]
+				current_floor_checkinator = true
+				cross_tower_checkinator = true
+				climb_unfinished = true
+			else--if menu_id == 102 or menu_id == 103 then
+				local chest = find_5k_chest(zone)
+				current_activity.args = destination_array.apollyon[chest]
+				log(chest and 'All data collected. Sending you to '..chest..'.')
+				if menu_id == current_activity.args.menu_id then
+					return "Open chest on this floor."
+				end
+				cross_tower_checkinator = true
+				climb_unfinished = false
+			end
+		elseif c_a.sub_cmd == 'random' then
+			if _apollyon_shuffle then
+				current_activity.args = destination_array.apollyon[_apollyon_shuffle]
+				current_floor_checkinator = true
+				cross_tower_checkinator = true
+				climb_unfinished = true
+			else
+				local chest = find_5k_chest(zone)
+				current_activity.args = destination_array.apollyon[chest]
+				log(chest and 'All data collected. Sending you to '..chest..'.')
+				if menu_id == current_activity.args.menu_id then
+					return "Open chest on this floor."
+				end
+				cross_tower_checkinator = true
+				climb_unfinished = false
+			end 
+		----------------------------------------------
+		elseif c_a.sub_cmd == 'port' then
+			if menu_id >= 102 and menu_id <= 111 then
+				if menu_id == 102 or menu_id == 103 then
+					current_activity.args = destination_array.apollyon.NW1
+				elseif menu_id == 104 then
+					current_activity.args = destination_array.apollyon.NW2
+				elseif menu_id == 105 then
+					current_activity.args = destination_array.apollyon.NW3
+				elseif menu_id == 106 then
+					current_activity.args = destination_array.apollyon.NW4
+				elseif menu_id == 107 then
+					current_activity.args = destination_array.apollyon.NW5
+				elseif menu_id == 108 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 109 then
+					current_activity.args = destination_array.apollyon.SW2
+				elseif menu_id == 110 then
+					current_activity.args = destination_array.apollyon.SW3
+				elseif menu_id == 111 then
+					current_activity.args = destination_array.apollyon.SW4
+				end
+			elseif menu_id >= 112 and menu_id <= 123 then
+				if menu_id == 112 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 113 then
+					current_activity.args = destination_array.apollyon.NE2
+				elseif menu_id == 114 then
+					current_activity.args = destination_array.apollyon.NE3
+				elseif menu_id == 115 then
+					current_activity.args = destination_array.apollyon.NE4
+				elseif menu_id == 116 then
+					current_activity.args = destination_array.apollyon.NE5
+				elseif menu_id == 117 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 118 then
+					current_activity.args = destination_array.apollyon.SE2
+				elseif menu_id == 119 then
+					current_activity.args = destination_array.apollyon.SE3
+				elseif menu_id == 120 then
+					current_activity.args = destination_array.apollyon.SE4
+				elseif menu_id == 121 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 123 then
+					current_activity.args = destination_array.apollyon.E1
+				end
+			end
+		elseif c_a.sub_cmd == 'back' then
+			if menu_id <= 123 and menu_id >= 113 then
+				if menu_id == 123 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 121 then
+					current_activity.args = destination_array.apollyon.SE3
+				elseif menu_id == 120 then
+					current_activity.args = destination_array.apollyon.SE2
+				elseif menu_id == 119 then
+					current_activity.args = destination_array.apollyon.SE1
+				elseif menu_id == 118 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 117 then
+					current_activity.args = destination_array.apollyon.NE4
+				elseif menu_id == 116 then
+					current_activity.args = destination_array.apollyon.NE3
+				elseif menu_id == 115 then
+					current_activity.args = destination_array.apollyon.NE2
+				elseif menu_id == 114 then
+					current_activity.args = destination_array.apollyon.NE1
+				elseif menu_id == 113 then
+					current_activity.args = destination_array.apollyon.E1
+				end
+			elseif menu_id <= 112 and menu_id >= 102 then
+				if menu_id == 112 then
+					current_activity.args = destination_array.apollyon.SW3
+				elseif menu_id == 111 then
+					current_activity.args = destination_array.apollyon.SW2
+				elseif menu_id == 110 then
+					current_activity.args = destination_array.apollyon.SW1
+				elseif menu_id == 109 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 108 then
+					current_activity.args = destination_array.apollyon.NW4
+				elseif menu_id == 107 then
+					current_activity.args = destination_array.apollyon.NW3
+				elseif menu_id == 106 then
+					current_activity.args = destination_array.apollyon.NW2
+				elseif menu_id == 105 then
+					current_activity.args = destination_array.apollyon.NW1
+				elseif menu_id == 104 then
+					current_activity.args = destination_array.apollyon.E1
+				elseif menu_id == 103 or menu_id == 102 then
+					current_activity.args = destination_array.apollyon.SE4
+				end
+			end
+		end
+		if c_a.sub_cmd then 
+			destination = current_activity.args 
+		end
+-----------------------------------------------------------------------------------------------------------
+	if c_a.sub_cmd ~= 'exit' and c_a.sub_cmd ~= 'enter' then
+		---------------------------------------------------------------------------------------------------
+        -- Cross-tower prevention / next command cross-tower destination override
+		local current_tower = get_tower(menu_id, apollyon_towers)
+		if current_tower and destination.menu_id ~= 102 and destination.menu_id ~= 103 and not current_tower[destination.menu_id] then
+			if cross_tower_checkinator then
+				cross_tower_checkinator = nil
+				current_activity.args = destination_array.apollyon.E1
+			else
+				return 'Cannot warp to other towers from here.'
+			end
+		end
+    end
+		if current_activity.args then
+			destination = current_activity.args
+		end
+		--------------------------------------------------------------------------------------------------------------------------------------------   
+		 --  Temenos
+        --------------------------------------------------------------------------------------------------------------------------------------------
+elseif zone == 37 then
+		-------------------------------------------------------------------------------------------------------------------------------------------
+       -- Destination setters
+        -------------------------------------------------------------------------------------------------------------------------------------------
+		if c_a.sub_cmd == 'next' then
+			if _temenos_floor then
+				current_activity.args = destination_array.temenos[_temenos_floor]
+				current_floor_checkinator = true
+				cross_tower_checkinator = true
+				climb_unfinished = true
+			else
+				local chest = find_5k_chest(zone)
+				current_activity.args = destination_array.temenos[chest]
+				log(chest and 'All data collected. Sending you to '..chest..'.')
+				cross_tower_checkinator = true
+				climb_unfinished = false
+				if menu_id == current_activity.args.menu_id then
+					return "Open chest on this floor."
+				end
+			end
+		elseif c_a.sub_cmd == 'random' then
+			if _temenos_shuffle then
+				current_activity.args = destination_array.temenos[_temenos_shuffle]
+				current_floor_checkinator = true
+				cross_tower_checkinator = true
+				climb_unfinished = true
+			else
+				local chest = find_5k_chest(zone)
+				current_activity.args = destination_array.temenos[chest]
+				log(chest and 'All data collected. Sending you to '..chest..'.')
+				cross_tower_checkinator = true
+				climb_unfinished = false
+				if menu_id == current_activity.args.menu_id then
+					return "Open chest on this floor."
+				end
+			end
+		elseif c_a.sub_cmd == 'port' then
+			if menu_id == 1000 or (menu_id >= 1004 and menu_id <= 1007) then
+				if menu_id == 1000 then
+					current_activity.args = destination_array.temenos.N1
+				elseif menu_id == 1004 then
+					current_activity.args = destination_array.temenos.N2
+				elseif menu_id == 1005 then
+					current_activity.args = destination_array.temenos.N3
+				elseif menu_id == 1006 then
+					current_activity.args = destination_array.temenos.N4
+				elseif menu_id == 1007 then
+					current_activity.args = destination_array.temenos.E
+				end
+			elseif menu_id >= 1011 and menu_id <= 1014 then
+				if menu_id == 1011 then
+					current_activity.args = destination_array.temenos.W2
+				elseif menu_id == 1012 then
+					current_activity.args = destination_array.temenos.W3
+				elseif menu_id == 1013 then
+					current_activity.args = destination_array.temenos.W4
+				elseif menu_id == 1014 then
+					current_activity.args = destination_array.temenos.E
+				end
+			elseif menu_id >= 1018 and menu_id <= 1021 then
+				if menu_id == 1018 then
+					current_activity.args = destination_array.temenos.E2
+				elseif menu_id == 1019 then
+					current_activity.args = destination_array.temenos.E3
+				elseif menu_id == 1020 then
+					current_activity.args = destination_array.temenos.E4
+				elseif menu_id == 1021 then
+					current_activity.args = destination_array.temenos.E
+				end
+			elseif menu_id >= 1023 and menu_id <= 1026 then
+				if menu_id == 1023 then
+					current_activity.args = destination_array.temenos.C2
+				elseif menu_id == 1024 then
+					current_activity.args = destination_array.temenos.C3
+				elseif menu_id == 1025 then
+					current_activity.args = destination_array.temenos.E
+				elseif menu_id == 1026 then
+					current_activity.args = destination_array.temenos.E
+				end
+			end
+		elseif c_a.sub_cmd == 'back' then
+			if menu_id <= 1026 and menu_id >= 1023 then
+				if menu_id == 1026 then
+					current_activity.args = destination_array.temenos.E
+				elseif menu_id == 1025 then
+					current_activity.args = destination_array.temenos.C2
+				elseif menu_id == 1024 then
+					current_activity.args = destination_array.temenos.C1
+				elseif menu_id == 1023 then
+					current_activity.args = destination_array.temenos.E
+				end
+			elseif menu_id <= 1021 and menu_id >= 1018 then
+				if menu_id == 1021 then
+					current_activity.args = destination_array.temenos.E3
+				elseif menu_id == 1020 then
+					current_activity.args = destination_array.temenos.E2
+				elseif menu_id == 1019 then
+					current_activity.args = destination_array.temenos.E1
+				elseif menu_id == 1018 then
+					current_activity.args = destination_array.temenos.E
+				end
+			elseif menu_id <= 1014 and menu_id >= 1011 then
+				if menu_id == 1014 then
+					current_activity.args = destination_array.temenos.W3
+				elseif menu_id == 1013 then
+					current_activity.args = destination_array.temenos.W2
+				elseif menu_id == 1012 then
+					current_activity.args = destination_array.temenos.W1
+				elseif menu_id == 1011 then
+					current_activity.args = destination_array.temenos.E
+				end
+			elseif (menu_id <= 1007 and menu_id >= 1004) or menu_id == 1000 then
+				if menu_id == 1007 then
+					current_activity.args = destination_array.temenos.N3
+				elseif menu_id == 1006 then
+					current_activity.args = destination_array.temenos.N2
+				elseif menu_id == 1005 then	
+					current_activity.args = destination_array.temenos.N1
+				elseif menu_id == 1004 then	
+					current_activity.args = destination_array.temenos.E
+				elseif menu_id == 1000 then
+					current_activity.args = destination_array.temenos.C3
+				end
+			end
+		end
+		if c_a.sub_cmd then
+			destination = current_activity.args
+		end
+-------------------------------------------
+        if not
+        (menu_id >= 1000 and menu_id <= 1026) then
+            return "Incorrect menu detected! Menu ID: " .. menu_id
+        end
+        -- Cross-tower prevention / next command cross-tower destination override
+		local current_tower = get_tower(menu_id, temenos_towers)
+		if current_tower and destination.menu_id ~= 1000 and not current_tower[destination.menu_id] then
+			if cross_tower_checkinator then
+				cross_tower_checkinator = nil
+				current_activity.args = destination_array.temenos.E
+			else
+				return 'Cannot warp to other towers from here.'
+			end
+		end
+end
+	if current_activity.args then
+		destination = current_activity.args
+	end
+	if c_a.sub_cmd ~= 'exit' and c_a.sub_cmd ~= 'enter' then
+		------------Same floor prevention / data check warp override------------------
+        if menu_id == destination.menu_id then
+			if current_floor_checkinator and (c_a.sub_cmd == 'next' or c_a.sub_cmd == 'random') then
+				current_floor_checkinator = nil
+				return "You still have work to do on this floor."
+			else
+                return "You're already at that location"
+			end
+        end
+---------------------------------
+        if not limbus_zones:contains(zone) then
+            return 'Not in Limbus!'
+        end
+        if zone ~= destination.zone then
+            return 'Destination is in wrong zone.'
+        end
+	end
+		current_floor_checkinator = nil
+		cross_tower_checkinator = nil
+		return nil
+    end,
+    help_text = "| Limbus |\n Command options [li, te, ap]\n- li e1/nw1/sw2/ne5/se3   e/n1/w2/e5/c3 etc. -- warp to a designated tower and floor in limbus. \n- li next -- warp to the first uncompleted floor in sequence, if this is in another tower, will warp to the entrance.\n- li random -- Similar to the next command, sends you to floors you do not have the data for until you have collected all data; Will send you to other floors within the same tower until all are completed then will send to another tower/floor.\n- li port -- warp to the next floor of any tower, if on last floor will warp to the entrance, if at entrance will warp to first floor of the first tower. \n- li back -- the reverse of port command, teleports to the previous floor. If you are on the first floor of a tower this will send you to the entrance, if you are at the entrance this command will send you to the last floor of the last tower.\n- li enter -- enter apollyon. \n- li exit -- exit apollyon.\n------------------------------",
+    sub_zone_targets = S {'e1', 'e2', 'nw1', 'nw2', 'nw3', 'nw4', 'nw5', 'sw1', 'sw2', 'sw3','sw4', 'ne1', 'ne2', 'ne3', 'ne4', 'ne5', 'se1', 'se2', 'se3', 'se4','entrance','n1', 'n2', 'n3', 'n4', 'w1', 'w2','w3', 'w4', 'e1', 'e2', 'e3', 'e4', 'c1','c2','c3', 'cn'}, 
+    auto_select_zone = function(zone)
+        if zone == 38 then
+            return 'apollyon'
+        elseif zone == 37 then
+            return 'temenos'
+        end
+    end,
+    build_warp_packets = function(current_activity, zone, p, settings)
+        local actions = T {}
+        local packet = nil
+        local menu = p["Menu ID"]
+        local npc = current_activity.npc
+        local destination = current_activity.activity_settings
+
+        -- menu change
+        packet = packets.new('outgoing', 0x05B)
+        packet["Target"] = npc.id
+        packet["Target Index"] = npc.index
+        packet["Zone"] = zone
+        packet["Menu ID"] = menu
+
+        packet["Option Index"] = 100 
+        packet["_unknown1"] = 0
+        packet["Automated Message"] = true
+        packet["_unknown2"] = 0
+        actions:append(T {
+            packet = packet,
+            delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),
+            description = 'send options'
+        })
+
+        -- request in-zone warp
+        packet = packets.new('outgoing', 0x05C)
+        packet["Target ID"] = npc.id
+        packet["Target Index"] = npc.index
+        packet["Zone"] = zone
+        packet["Menu ID"] = menu
+
+        packet["X"] = destination.x
+        packet["Y"] = destination.y
+        packet["Z"] = destination.z
+        packet["_unknown1"] = destination.unknown1 
+        packet["Rotation"] = destination.h
+        packet["_unknown2"] = destination.unknown2
+        actions:append(T {
+            packet = packet,
+            wait_packet = 0x052,
+            delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),-- + 0.5,
+            description = 'same-zone move request'
+        })
+  
+        -- complete menu
+        packet = packets.new('outgoing', 0x05B)
+        packet["Target"] = npc.id
+        packet["Target Index"] = npc.index
+        packet["Zone"] = zone
+        packet["Menu ID"] = menu
+
+        packet["Option Index"] = destination.unknown1 
+        packet["_unknown1"] = 0
+        packet["Automated Message"] = false
+        packet["_unknown2"] = 0
+        actions:append(T {
+            packet = packet,
+            wait_packet = 0x05B,
+            expecting_zone = false,
+            delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),
+            description = 'complete menu'
+        })
+
+        -- update request
+        packet = packets.new('outgoing', 0x016)
+        packet["Target Index"] = windower.ffxi.get_player().index
+        actions:append(T {
+            packet = packet,
+            description = 'update request'
+        })
+      
+        return actions
+    end,
+sub_commands = {
+	port = function(current_activity, zone, p, settings, warpdata)
+		local actions = T {}
+		local packet = nil
+		local menu = p["Menu ID"]
+		local npc = current_activity.npc
+		local destination = current_activity.args
+			if zone ~= destination.zone then
+				log('Woa woa woa.')
+				return
+			end
+		    --------------------------------------------------------------------------------------
+		    log('Warping via ' .. npc.name .. ' to '..destination.display_name..'.')
+			--------------------------------------------------------------------------------------
+
+            -- menu change
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = 100
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            actions:append(T {
+                packet = packet,
+				delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation) ,
+                description = 'send options'
+            })
+
+            -- request in-zone warp
+            packet = packets.new('outgoing', 0x05C)
+            packet["Target ID"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["X"] = destination.x
+            packet["Y"] = destination.y
+            packet["Z"] = destination.z
+            packet["_unknown1"] = destination.unknown1
+            packet["Rotation"] = destination.h
+            packet["_unknown2"] = destination.unknown2
+            actions:append(T {
+                packet = packet,
+                wait_packet = 0x052,
+                delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),-- + 0.5,
+                description = 'same-zone move request'
+            })
+
+            -- complete menu
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = destination.unknown1
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+
+            actions:append(T {
+            packet = packet,
+            wait_packet = 0x05B,
+            expecting_zone = false,
+            delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),
+            description = 'complete menu'
+            })
+
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T {
+                packet = packet,
+                description = 'update request'
+            })
+
+            return actions
+        end,
+  
+	back = function(current_activity, zone, p, settings, warpdata)
+		local actions = T {}
+		local packet = nil
+		local menu = p["Menu ID"]
+		local npc = current_activity.npc
+		local destination = current_activity.args
+			if zone ~= destination.zone then
+				log('Woa woa woa.')
+				return
+			end
+		    --------------------------------------------------------------------------------------
+		    log('Warping via ' .. npc.name .. ' to '..destination.display_name..'.')
+			--------------------------------------------------------------------------------------
+
+            -- menu change
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = 100
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            actions:append(T {
+                packet = packet,
+                delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation) ,
+                description = 'send options'
+            })
+
+            -- request in-zone warp
+            packet = packets.new('outgoing', 0x05C)
+            packet["Target ID"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["X"] = destination.x
+            packet["Y"] = destination.y
+            packet["Z"] = destination.z
+            packet["_unknown1"] = destination.unknown1
+            packet["Rotation"] = destination.h
+            packet["_unknown2"] = destination.unknown2
+            actions:append(T {
+                packet = packet,
+                wait_packet = 0x052,
+                delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),-- + 0.5,
+                description = 'same-zone move request'
+            })
+
+            -- complete menu
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = destination.unknown1
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+
+            actions:append(T {
+            packet = packet,
+            wait_packet = 0x05B,
+            expecting_zone = false,
+            delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),
+            description = 'complete menu'
+            })
+
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T {
+                packet = packet,
+                description = 'update request'
+            })
+
+            return actions
+        end,
+
+	['next'] = function(current_activity, zone, p, settings, warpdata)
+		local actions = T {}
+		local packet = nil
+		local menu = p["Menu ID"]
+		local npc = current_activity.npc
+		local _apollyon_floor, item_id = find_first_apollyon_missing_floor()
+        local _temenos_floor, item_id = find_first_temenos_missing_floor()
+		local destination = current_activity.args
+		local chest_reminder = nil
+			if climb_unfinished then
+				if (menu == 102 or menu == 103 or menu == 1000) then
+					local chest = find_5k_chest(zone)
+					chest_reminder = 'End this climb at the '..chest..' chest.'
+				end
+			end
+				if zone ~= destination.zone then
+					log('Woa woa woa.')
+					return
+				end
+		    --------------------------------------------------------------------------------------
+				log('Warping via ' .. npc.name .. ' to '..destination.display_name..'.')
+				if chest_reminder then
+					log(chest_reminder)
+				end
+			--------------------------------------------------------------------------------------
+
+            -- menu change
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = 100
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            actions:append(T {
+                packet = packet,
+                delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation) ,
+                description = 'send options'
+            })
+
+            -- request in-zone warp
+            packet = packets.new('outgoing', 0x05C)
+            packet["Target ID"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["X"] = destination.x
+            packet["Y"] = destination.y
+            packet["Z"] = destination.z
+            packet["_unknown1"] = destination.unknown1
+            packet["Rotation"] = destination.h
+            packet["_unknown2"] = destination.unknown2
+            actions:append(T {
+                packet = packet,
+                wait_packet = 0x052,
+                delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),-- + 0.5,
+                description = 'same-zone move request'
+            })
+
+            -- complete menu
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = destination.unknown1
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+
+            actions:append(T {
+            packet = packet,
+            wait_packet = 0x05B,
+            expecting_zone = false,
+            delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),
+            description = 'complete menu'
+            })
+
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T {
+                packet = packet,
+                description = 'update request'
+            })
+
+            return actions
+        end,
+		
+	['random'] = function(current_activity, zone, p, settings, warpdata)
+			local actions = T {}
+			local packet = nil
+			local menu = p["Menu ID"]
+			local npc = current_activity.npc
+			local destination = current_activity.args
+		    local _apollyon_shuffle, item_id = find_shuffled_missing_apollyon_floor(menu)
+            local _temenos_shuffle, item_id = find_shuffled_missing_temenos_floor(menu)
+			local chest_reminder = nil
+			if climb_unfinished then
+				if (menu == 102 or menu == 103 or menu == 1000) then
+					local chest = find_5k_chest(zone)
+					chest_reminder = 'End this climb at the '..chest..' chest.'
+				end
+			end
+			if zone ~= destination.zone then
+				log('Woa woa woa.')
+				return
+			end
+		--------------------------------------------------------------------------------------
+			log('Warping via ' .. npc.name .. ' to '..destination.display_name..'.')
+			if chest_reminder then
+				log(chest_reminder)
+			end
+			--------------------------------------------------------------------------------------
+
+            -- menu change
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = 100
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            actions:append(T {
+                packet = packet,
+                delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation) ,
+                description = 'send options'
+            })
+
+            -- request in-zone warp
+            packet = packets.new('outgoing', 0x05C)
+            packet["Target ID"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["X"] = destination.x
+            packet["Y"] = destination.y
+            packet["Z"] = destination.z
+            packet["_unknown1"] = destination.unknown1
+            packet["Rotation"] = destination.h
+            packet["_unknown2"] = destination.unknown2
+            actions:append(T {
+                packet = packet,
+                wait_packet = 0x052,
+                delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),-- + 0.5,
+                description = 'same-zone move request'
+            })
+
+            -- complete menu
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Target Index"] = npc.index
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+
+            packet["Option Index"] = destination.unknown1
+            packet["_unknown1"] = 0
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+
+            actions:append(T {
+            packet = packet,
+            wait_packet = 0x05B,
+            expecting_zone = false,
+            delay = wiggle_value(settings.simulated_response_time, settings.simulated_response_variation),
+            description = 'complete menu'
+            })
+
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T {
+                packet = packet,
+                description = 'update request'
+            })
+
+            return actions
+        end,		
+	enter = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+           
+            log("Entering Apollyon...")
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 0
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay = 1 + wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu'})
+
+            return actions
+        end,
+
+	['exit'] = function(current_activity, zone, p, settings)
+            local actions = T{}
+            local packet = nil
+            local menu = p["Menu ID"]
+            local npc = current_activity.npc
+
+            log("Leaving Apollyon...")
+            -- update request
+            packet = packets.new('outgoing', 0x016)
+            packet["Target Index"] = windower.ffxi.get_player().index
+            actions:append(T{packet=packet, description='update request'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 0
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = true
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, delay=wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='send options'})
+
+            packet = packets.new('outgoing', 0x05B)
+            packet["Target"] = npc.id
+            packet["Option Index"] = 1
+            packet["_unknown1"] = 0
+            packet["Target Index"] = npc.index
+            packet["Automated Message"] = false
+            packet["_unknown2"] = 0
+            packet["Zone"] = zone
+            packet["Menu ID"] = menu
+            actions:append(T{packet=packet, wait_packet=0x052, expecting_zone=true, delay = 1 +  wiggle_value(settings.simulated_response_time, settings.simulated_response_variation), description='complete menu'})
+
+            return actions
+        end,
+    },
+    self_commands = {
+        boxes = function (current_activity, zone, settings)
+            local packet = packets.new('outgoing', 0x01A, {
+                ["Target"]=current_activity.npc.id,
+                ["Target Index"]=current_activity.npc.index,
+                ["Category"]=0,
+                ["Param"]=0,
+                ["_unknown1"]=0})
+            packets.inject(packet)
+            return nil
+        end,
+    },
+    warpdata = T{
+        ['Apollyon'] = T{
+			['Entrance']  = { shortcut = 'E1' },
+			['E1']  = {display_name = 'Entrance 1', zone = 38, menu_id = 102,  index = 678, npc = 16933542, offset = 1, x = -608,z = 0, y = -600,h = 126, unknown1 = 1,  unknown2 = 1},
+			['E2']  = {display_name = 'Entrance 2', zone = 38, menu_id = 103,  index = 679, npc = 169335543, offset = 1, x = 608,z = 0, y = -600,h = 0,   unknown1 = 1,  unknown2 = 1},
+			['NW1'] = {display_name = 'Northwest 1', zone = 38, menu_id = 104,  index = 680, npc = 16933544, offset = 1, x = -440.00003051758, z = 0, y = -88.000007629395,  h = 191, unknown1 = 11, unknown2 = 1},
+			['NW2'] = {display_name = 'Northwest 2', zone = 38, menu_id = 105,  index = 681, npc = 16933545, offset = 2, x = -534,z = 0, y = 171.00001525879,h = 159, unknown1 = 12, unknown2 = 1},
+			['NW3'] = {display_name = 'Northwest 3', zone = 38, menu_id = 106,  index = 682, npc = 16933546, offset = 3, x = -294,z = 0, y = 171.00001525879,h = 159, unknown1 = 13, unknown2 = 1},
+			['NW4'] = {display_name = 'Northwest 4', zone = 38, menu_id = 107,  index = 683, npc = 16933547, offset = 4, x = -628,z = 0, y = 497.00003051758,h = 223, unknown1 = 14, unknown2 = 1},
+			['NW5'] = {display_name = 'Northwest 5', zone = 38, menu_id = 108,  index = 684, npc = 16933548, offset = 5, x = -388,z = 0, y = 498.00003051758,h = 223, unknown1 = 15, unknown2 = 1},
+			['SW1'] = {display_name = 'Southwest 1', zone = 38, menu_id = 109,  index = 685, npc = 16933549, offset = 3, x = -468.00003051758, z = 0, y = -625,h = 223, unknown1 = 21, unknown2 = 1},
+			['SW2'] = {display_name = 'Southwest 2', zone = 38, menu_id = 110,  index = 686, npc = 16933550, offset = 4, x = -576,z = 0, y = -428.00003051758,  h = 159, unknown1 = 22, unknown2 = 1},
+			['SW3'] = {display_name = 'Southwest 3', zone = 38, menu_id = 111,  index = 687, npc = 16933551, offset = 0, x = -428.00003051758, z = 0, y = -385.00003051758,  h = 223, unknown1 = 23, unknown2 = 1},
+			['SW4'] = {display_name = 'Southwest 4', zone = 38, menu_id = 112,  index = 688, npc = 16933552, offset = 5, x = -176.00001525879, z = 0, y = -628,h = 159, unknown1 = 24, unknown2 = 1},
+			['NE1'] = {display_name = 'Northeast 1', zone = 38, menu_id = 113,  index = 689, npc = 16933553, offset = 9, x = 440.00003051758,  z = 0, y = -88.000007629395,  h = 191, unknown1 = 31, unknown2 = 1},
+			['NE2'] = {display_name = 'Northeast 2', zone = 38, menu_id = 114,  index = 690, npc = 16933554, offset = 10,x = 534,z = 0, y = 171.00001525879,h = 223, unknown1 = 32, unknown2 = 1},
+			['NE3'] = {display_name = 'Northeast 3', zone = 38, menu_id = 115,  index = 691, npc = 16933555, offset = 10,x = 294,z = 0, y = 171.00001525879,h = 223, unknown1 = 33, unknown2 = 1},
+			['NE4'] = {display_name = 'Northeast 4', zone = 38, menu_id = 116,  index = 692, npc = 16933556, offset = 1, x = 628,z = 0, y = 497.00003051758,h = 159, unknown1 = 34, unknown2 = 1},
+			['NE5'] = {display_name = 'Northeast 5', zone = 38, menu_id = 117,  index = 693, npc = 16933557, offset = 2, x = 388.00003051758,  z = 0, y = 498.00003051758,h = 159, unknown1 = 35, unknown2 = 1},
+			['SE1'] = {display_name = 'Southeast 1', zone = 38, menu_id = 118,  index = 694, npc = 16933558, offset = 5, x = 468.00003051758,  z = 0, y = -625,h = 159, unknown1 = 41, unknown2 = 1},
+			['SE2'] = {display_name = 'Southeast 2', zone = 38, menu_id = 119,  index = 695, npc = 16933559, offset = 6, x = 576,z = 0, y = -428.00003051758,  h = 223, unknown1 = 42, unknown2 = 1},
+			['SE3'] = {display_name = 'Southeast 3', zone = 38, menu_id = 120,  index = 696, npc = 16933560, offset = 7, x = 428.00003051758,  z = 0, y = -385.00003051758,  h = 159, unknown1 = 43, unknown2 = 1},
+			['SE4'] = {display_name = 'Southeast 4', zone = 38, menu_id = 121,  index = 697, npc = 16933561, offset = 8, x = 176.00001525879,  z = 0, y = -628,h = 223, unknown1 = 44, unknown2 = 1},
+			['CN'] = {display_name = 'Central Apollyon',  zone = 38, menu_id = 123,  index = 698, npc = 16933562, offset = 8, x = 0,  z = 0, y = 196.00001525879,h = 63, unknown1 = 51, unknown2 = 1},
+		},
+        ['Temenos'] = T{  
+			['Entrance'] = {display_name = 'Entrance' ,        zone = 37, menu_id = 1000, index = 510, npc = 16929278, offset = 1, x = 580, z = 0 ,  y = 86.000007629395,   h = 63,  unknown1 = 1 , unknown2 = 1},
+			['N1'] = {display_name = 'Northern Tower 1', zone = 37, menu_id = 1004, index = 571, npc = 16929339, offset = 1, x = -140,z = -82.380004882812 ,y = 376.00003051758,   h = 191, unknown1 = 11 ,unknown2 = 1},
+			['N2'] = {display_name = 'Northern Tower 2', zone = 37, menu_id = 1005, index = 572, npc = 16929340, offset = 2, x = -260,z = 77.620002746582 , y = 376.00003051758, h = 191, unknown1 = 12 ,unknown2 = 1},
+			['N3'] = {display_name = 'Northern Tower 3', zone = 37, menu_id = 1006, index = 573, npc = 16929341, offset = 3, x = -460.00003051758, z = -82.380004882812 ,y = 376.00003051758,   h = 191, unknown1 = 13 ,unknown2 = 1},
+			['N4'] = {display_name = 'Northern Tower 4', zone = 37, menu_id = 1007, index = 574, npc = 16929342, offset = 4, x = -580,z = 77.620002746582 , y = 376.00003051758,   h = 191, unknown1 = 14 ,unknown2 = 1},
+			['W1'] = {display_name = 'Western Tower 1',  zone = 37, menu_id = 1011, index = 578, npc = 16929346, offset = 3, x = -140,z = -162.38000488281 ,y = 96.000007629395,                h = 191, unknown1 = 21, unknown2 = 1},
+			['W2'] = {display_name = 'Western Tower 2',  zone = 37, menu_id = 1012, index = 579, npc = 16929347, offset = 4, x = -260,z = -2.3800001144409 ,y = 96.000007629395,                h = 191, unknown1 = 22, unknown2 = 1},
+			['W3'] = {display_name = 'Western Tower 3',  zone = 37, menu_id = 1013, index = 580, npc = 16929348, offset = 0, x = -460.00003051758, z = -162.38000488281 ,y = 96.000007629395,   h = 191, unknown1 = 23, unknown2 = 1},
+			['W4'] = {display_name = 'Western Tower 4',  zone = 37, menu_id = 1014, index = 581, npc = 16929349, offset = 5, x = -580,z = -2.3800001144409, y = 96.000007629395,                h = 191, unknown1 = 24, unknown2 = 1},
+			['E1'] = {display_name = 'Eastern Tower 1',  zone = 37, menu_id = 1018, index = 585, npc = 16929353, offset = 9,  x = -140,z = -82.380004882812, y = -184.00001525879,               h = 191, unknown1 = 31, unknown2 = 1},
+			['E2'] = {display_name = 'Eastern Tower 2',  zone = 37, menu_id = 1019, index = 586, npc = 16929354, offset = 10, x = -260,z = 77.620002746582,  y = -184.00001525879,               h = 191, unknown1 = 32, unknown2 = 1},
+			['E3'] = {display_name = 'Eastern Tower 3',  zone = 37, menu_id = 1020, index = 587, npc = 16929355, offset = 10, x = -460.00003051758, z = -82.380004882812, y = -184.00001525879,  h = 191, unknown1 = 33, unknown2 = 1},
+			['E4'] = {display_name = 'Eastern Tower 4',  zone = 37, menu_id = 1021, index = 588, npc = 16929356, offset = 1,  x = -580,z = 77.620002746582,   y = -184.00001525879,              h = 191, unknown1 = 34, unknown2 = 1},
+			['C1'] = {display_name = 'Central Tower 1',  zone = 37, menu_id = 1023, index = 590, npc = 16929358, offset = 5, x = 260, z = -162.38000488281, y = -504.00003051758,  h = 191, unknown1 = 41, unknown2 = 1},
+			['C2'] = {display_name = 'Central Tower 2',  zone = 37, menu_id = 1024, index = 591, npc = 16929359, offset = 6, x = 20,  z = -2.3800001144409, y = -544,              h = 191, unknown1 = 42, unknown2 = 1},
+			['C3'] = {display_name = 'Central Tower 3',  zone = 37, menu_id = 1025, index = 592, npc = 16929360, offset = 7, x = -296,z = -162.38000488281, y = -500.00003051758,  h = 127, unknown1 = 43, unknown2 = 1},
+			['CN'] = {display_name = 'Temenos Central B1',zone = 37, menu_id = 1026, index = 594, npc = 16929361, offset = 8, x = -540,z = -2.3800001144409, y = -584,  h = 191, unknown1 = 51, unknown2 = 1},     
+		},
+    },
+}

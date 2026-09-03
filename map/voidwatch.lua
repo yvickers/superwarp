@@ -5,8 +5,8 @@ local npc_names = T{
     warp = S{"Atmacite Refiner"},
 }
 return T{ --  index: 1
-    short_name = 'vw',
-    long_name = 'voidwatch',
+    short_name = {'vw','vo'},
+    long_name = 'Voidwatch',
     npc_plural = 'atmacite refiners',
     npc_names = npc_names,
     zone_npc_list = function(type)
@@ -44,7 +44,7 @@ return T{ --  index: 1
         end
         return missing
     end,
-    help_text = "|Voidwatch| - [sw] vw [warp/w] [all/a/@all/party/p] zone name -- warp to a designated voidwatch zone. \"all\" sends ipc to all local clients.\n-----------------------------",
+    help_text = "| Voidwatch |\n Command options [vw, vo]\n- vw zone name -- warp to a designated voidwatch zone.\n-----------------------------",
     sub_zone_targets = S{},
     build_warp_packets = function(current_activity, zone, p, settings)
         local actions = T{}

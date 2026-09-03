@@ -2,8 +2,8 @@ local npc_names = T{
     warp = S{'Survival Guide'},
 }
 return T{ -- option: 1
-    short_name = 'sg',
-    long_name = 'survival guide',
+    short_name = {'sg','sur'},
+    long_name = 'Survival guide',
     npc_plural = 'survival guides',
     npc_names = npc_names,
     zone_npc_list = function(type)
@@ -19,6 +19,10 @@ return T{ -- option: 1
     validate = function(menu_id, zone, current_activity)
         if not(menu_id == 8500 or menu_id == 8501) then
             return "Incorrect menu detected! Menu ID: "..menu_id
+        end
+        local destination = current_activity.activity_settings
+        if zone == destination.zone then
+            return "You are already at that location."
         end
         return nil
     end,
@@ -37,7 +41,7 @@ return T{ -- option: 1
         end
         return missing
     end,
-    help_text = "|Survival Guides| - [sw] sg [warp/w] [all/a/@all/party/p] zone name -- warp to a designated survival guide. \"all\" sends ipc to all local clients.\n-----------------------------",
+    help_text = "| Survival Guides |\n Command options [sg, sur]\n- sg zone name -- warp to a designated survival guide.\n-----------------------------",
     sub_zone_targets = S{},
     build_warp_packets = function(current_activity, zone, p, settings)
         local actions = T{}
@@ -52,7 +56,7 @@ return T{ -- option: 1
         local thrifty_transit = menu == 8501
 
         local unlock_bit_start = 12*8
-
+        
         debug('guide is unlocked: '..tostring(has_bit(p["Menu Parameters"], unlock_bit_start + destination.offset)))
 
         if not has_bit(p["Menu Parameters"], unlock_bit_start + destination.offset) then

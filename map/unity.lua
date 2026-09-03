@@ -2,8 +2,8 @@ local npc_names = T{
     warp = S{"Igsli", "Urbiolaine", "Teldro-Kesdrodo", "Yonolala", "Nunaarl Bthtrogg"},
 }
 return T{ -- option: 1
-    short_name = 'un',
-    long_name = 'unity',
+    short_name = {'un','uy'},
+    long_name = 'Unity',
     npc_plural = 'unity npcs',
     npc_names = T{
         warp = T{"Igsli", "Urbiolaine", "Teldro-Kesdrodo", "Yonolala", "Nunaarl Bthtrogg"},
@@ -43,7 +43,7 @@ return T{ -- option: 1
         end
         return missing
     end,
-    help_text = "|Unity| - [sw] un [warp/w] [all/a/@all/party/p] zone name -- warp to a designated unity zone. \"all\" sends ipc to all local clients.\n-----------------------------",
+    help_text = "| Unity |\n Command options [un, uy]\n- un zone name -- warp to a designated unity zone.\n-----------------------------",
     sub_zone_targets = S{},
     build_warp_packets = function(current_activity, zone, p, settings)
         local actions = T{}

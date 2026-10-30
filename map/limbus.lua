@@ -332,6 +332,9 @@ return T {
         return mlist
     end,
     validate = function(menu_id, zone, c_a,p,chestdata)
+        if c_a.self_cmd then
+            return nil
+        end
 		if chestdata == nil then
 			return 'Please update your superwarp.lua file to version 1.0.5 or later for Limbus support.'
 		end
